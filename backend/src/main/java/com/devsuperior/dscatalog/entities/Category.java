@@ -2,6 +2,7 @@ package com.devsuperior.dscatalog.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -13,6 +14,12 @@ public class Category implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+
+    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE") // Aqui estamos definindo que o horário padrão será o UTC
+    private Instant createdAt;
+
+    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE") // Aqui estamos definindo que o horário padrão será o UTC
+    private Instant updatedAt;
 
     public Category() {
     }
@@ -36,6 +43,24 @@ public class Category implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    @PrePersist // Sempre que chamarmos o save, o sistema gravará automaticamente a data e horário
+    public void prePersist() {
+        createdAt = Instant.now();
+    }
+
+    @PreUpdate // Sempre que chamarmos o update, o sistema gravará automaticamente a data e horário
+    public void preUpdate() {
+        updatedAt = Instant.now();
     }
 
     @Override
