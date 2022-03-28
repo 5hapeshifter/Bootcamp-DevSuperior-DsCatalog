@@ -15,6 +15,7 @@ public class Category implements Serializable {
     private Long id;
     private String name;
 
+    // Dado de auditoria para ver a data e hora de criação e alteração do objeto
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE") // Aqui estamos definindo que o horário padrão será o UTC
     private Instant createdAt;
 
