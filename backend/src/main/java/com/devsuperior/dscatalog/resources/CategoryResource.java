@@ -36,4 +36,16 @@ public class CategoryResource {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
         return ResponseEntity.created(uri).body(dto);
     }
+
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<CategoryDTO> update(@PathVariable(value = "id") Long id, @RequestBody CategoryDTO dto){
+        dto = service.update(id, dto);
+        return ResponseEntity.ok().body(dto);
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> update(@PathVariable(value = "id") Long id){ // Como o corpo da resposta será vazio, estamos usando o Void no Response Entity
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
