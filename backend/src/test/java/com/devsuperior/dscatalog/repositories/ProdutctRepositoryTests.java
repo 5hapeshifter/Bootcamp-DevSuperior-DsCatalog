@@ -17,14 +17,15 @@ public class ProdutctRepositoryTests {
     @Autowired
     private ProductRepository repository;
 
+
     private long existingId;
     private long nonExistingId;
     private long countTotalProducts;
 
-    @BeforeEach // O que for inserido dentro desse metodo, sera executado antes de cada teste da classe
-    void setUp() throws Exception {
-        long nonExistingId = 1000L;
-        long existingId = 1L;
+    @BeforeEach
+    void setUp() throws Exception { // O que for inserido dentro desse metodo, sera executado antes de cada teste da classe
+        nonExistingId = 1000L;
+        existingId = 1L;
     }
 
     @Test
@@ -39,7 +40,6 @@ public class ProdutctRepositoryTests {
 
     @Test
     public void deleteShouldDeleteObjectWhenIdExists() {
-        long existingId = 1L;
         repository.deleteById(existingId);
         Optional<Product> result = repository.findById(existingId);
         Assertions.assertFalse(result.isPresent());
@@ -52,5 +52,15 @@ public class ProdutctRepositoryTests {
         });
     }
 
+    @Test
+    public void findByIdShouldReturnAProductWhenIdExist() {
+        Optional<Product> product = repository.findById(existingId);
+        Assertions.assertNotNull(product.get());
+    }
 
+    @Test
+    public void findByIdShouldNotReturnAProductWhenIdDoesNotExist() {
+        Optional<Product> product = repository.findById(nonExistingId);
+        Assertions.assertEquals(Optional.empty(), product);
+    }
 }

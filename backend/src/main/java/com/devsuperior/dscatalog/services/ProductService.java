@@ -37,7 +37,7 @@ public class ProductService {
     @Transactional(readOnly = true) // Se der algum problema, td será desfeito. importante colocar o read only true para otimizar a consulta
     public ProductDTO findById(Long id) {
         Optional<Product> obj = repository.findById(id);
-        Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("Entity nor found")); // se tiver um erro na consulta, o objeto não existir, a msg será enviada
+        Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("Entity not found")); // se tiver um erro na consulta, o objeto não existir, a msg será enviada
         return new ProductDTO(entity, entity.getCategories());
     }
 
