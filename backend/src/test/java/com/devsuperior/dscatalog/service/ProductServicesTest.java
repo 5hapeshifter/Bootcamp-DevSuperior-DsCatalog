@@ -23,6 +23,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.persistence.EntityNotFoundException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,22 +47,35 @@ public class ProductServicesTest {
     @Mock
     private ProductRepository repository;
 
-//    @MockBean // Utilizar quando uma classe carrega o contexto da aplicação e precisamos mockar algum bean do Spring(@WebMvcTest, SpringBootTest)
-//    private ProductRepository repository2;
-
+    /*
+        private ProductRepository repository2;
+    */
     private long existingId;
     private long nonExistingId;
     private long dependentId;
     private PageImpl<Product> page;
     private Product product;
+    private ProductDTO dto;
+    //private Product dtoToProduct;
 
     @BeforeEach
     void setUp(){
         existingId = 1L;
-        nonExistingId = 2L;
-        dependentId = 3L;
+        nonExistingId = 1000L;
+        dependentId = 3L; // Utilizamos quando tentamos deletar um objeto que depende do outro
         product = Factory.createProduct();
         page = new PageImpl<>(List.of(product));
+        dto = new ProductDTO(1L, "AAAA", "BBBBB", 5.00, "www.naoxiste.com", Instant.now());
+
+        /*
+         Como o método retorna um pageable, temos que fazer um cast para Pageable para o compilador saber o tipo do objeto
+         O ArgumentMatchers passa qualquer argumento que satisfaça a condição do objeto
+         */
+        Mockito.when(repository.findAll((Pageable)ArgumentMatchers.any())).thenReturn(page);
+        Mockito.when(repository.save(ArgumentMatchers.any())).thenReturn(product);
+        Mockito.when(repository.findById(existingId)).thenReturn(Optional.of(product));
+        Mockito.when(repository.getOne(existingId)).thenReturn(product);
+
         /*
          Configuração dos comportamentos que devem ocorrer.
          Mockito.doNothing().when(repository).deleteById(existingid);
@@ -71,16 +86,36 @@ public class ProductServicesTest {
         Mockito.doNothing().when(repository).deleteById(existingId);
         Mockito.doThrow(EmptyResultDataAccessException.class).when(repository).deleteById(nonExistingId);
         Mockito.doThrow(DataIntegrityViolationException.class).when(repository).deleteById(dependentId);
-        /*
-         Como o método retorna um pageable, temos que fazer um cast para Pageable para o compilador saber o tipo do objeto
-         O ArgumentMatchers passa qualquer argumento que satisfaça a condição do objeto
-         */
-        Mockito.when(repository.findAll((Pageable)ArgumentMatchers.any())).thenReturn(page);
+        Mockito.doThrow(EntityNotFoundException.class).when(repository).getOne(nonExistingId);
 
-        Mockito.when(repository.save(ArgumentMatchers.any())).thenReturn(product);
+    }
 
-        Mockito.when(repository.findById(existingId)).thenReturn(Optional.of(product));
-        Mockito.when(repository.findById(nonExistingId)).thenReturn(Optional.empty());
+
+
+    @Test
+    public void updateShouldReturnProductDtoWhenIdExist() {
+        ProductDTO productDTO = service.update(existingId, dto);
+        Assertions.assertNotNull(productDTO);
+        Mockito.verify(repository, Mockito.times(1)).getOne(existingId);
+    }
+
+    @Test
+    public void updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() {
+        Assertions.assertThrows(ResourceNotFoundException.class,() ->service.update(nonExistingId, dto));
+        Mockito.verify(repository, Mockito.times(1)).getOne(nonExistingId);
+    }
+
+    @Test
+    public void findByIdShouldReturnProductDtoWhenIdExist() {
+        ProductDTO productDTO = service.findById(existingId);
+        Assertions.assertNotNull(productDTO);
+        Mockito.verify(repository, Mockito.times(1)).findById(existingId);
+    }
+
+    @Test
+    public void findByIdShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() {
+        Assertions.assertThrows(ResourceNotFoundException.class, () -> service.findById(nonExistingId));
+        Mockito.verify(repository).findById(nonExistingId);
     }
 
     @Test
