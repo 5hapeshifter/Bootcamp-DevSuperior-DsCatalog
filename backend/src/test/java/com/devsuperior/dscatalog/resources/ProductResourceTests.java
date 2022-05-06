@@ -2,6 +2,7 @@ package com.devsuperior.dscatalog.resources;
 
 import com.devsuperior.dscatalog.dto.ProductDTO;
 import com.devsuperior.dscatalog.services.ProductService;
+import com.devsuperior.dscatalog.services.exceptions.DataBaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 import com.devsuperior.dscatalog.tests.Factory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,18 +38,21 @@ public class ProductResourceTests {
 
     private long existingId;
     private long nonExistingId;
+    private long dependentId;
     private ProductDTO productDTO;
     private PageImpl<ProductDTO> page; // Objeto concreto ao inves do Page que é uma interface
 
     @BeforeEach
     void setUp() throws Exception{
+        // Como o interesse aqui é o comportamento simulado, não importa os valores em si, basta eles serem diferentes, porque não estamos testando o banco de dados.
         existingId = 1L;
         nonExistingId = 2L;
+        dependentId = 3L;
 
         productDTO = Factory.createProductDto();
         page = new PageImpl<>(List.of(productDTO));
 
-        // Comportamentos
+        // Comportamentos esperados simulados
         Mockito.when(service.findAllPaged(any())).thenReturn(page);
 
         Mockito.when(service.findById(existingId)).thenReturn(productDTO);
@@ -57,22 +61,63 @@ public class ProductResourceTests {
         Mockito.when(service.update(ArgumentMatchers.eq(existingId), any())).thenReturn(productDTO);
         Mockito.when(service.update(ArgumentMatchers.eq(nonExistingId), any())).thenThrow(ResourceNotFoundException.class);
 
+        Mockito.doNothing().when(service).delete(existingId);
+        Mockito.doThrow(ResourceNotFoundException.class).when(service).delete(nonExistingId);
+        Mockito.doThrow(DataBaseException.class).when(service).delete(dependentId);
+
+        //TODO Questionar o pq não aceita o dto, mas o any sim
+        Mockito.when(service.insert(any())).thenReturn(productDTO);
+
+    }
+
+    @Test
+    public void insertShouldReturnProductDto() throws Exception {
+        String jsonBody = objectMapper.writeValueAsString(productDTO);
+        ResultActions result =
+                mockMvc.perform(MockMvcRequestBuilders.post("/products")
+                        .content(jsonBody)
+                        .contentType(MediaType.APPLICATION_JSON) // Tipo de dados da requisição
+                        .accept(MediaType.APPLICATION_JSON)); // Tipo de dados da resposta
+        result.andExpect(MockMvcResultMatchers.status().isCreated());
+        result.andExpect(MockMvcResultMatchers.jsonPath("$.id").exists());
+        result.andExpect(MockMvcResultMatchers.jsonPath("$.name").exists());
+        result.andExpect(MockMvcResultMatchers.jsonPath("$.description").exists());
+    }
+
+    @Test
+    public void deleteShouldThrowResourceNotFoundExceptionWhenIdDoesNotExist() throws Exception {
+        ResultActions result =
+                mockMvc.perform(MockMvcRequestBuilders.delete("/products/{id}", nonExistingId)
+                        .accept(MediaType.APPLICATION_JSON));
+        // Status esperado
+        result.andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void deleteShouldThrowDataBaseExceptionWhenDependentIdExist() throws Exception {
+        ResultActions result =
+                mockMvc.perform(MockMvcRequestBuilders.delete("/products/{id}", dependentId)
+                        .accept(MediaType.APPLICATION_JSON));
+        // Status esperado
+        result.andExpect(MockMvcResultMatchers.status().isBadRequest());
+
     }
 
     @Test
     public void updateShouldReturnProductDTOWhenIdExist() throws Exception {
-        // Para poder fazer o teste estamos convertando o tipo do objeto da resposta de Json para Java
+        // Para poder fazer o teste estamos convertando o tipo do objeto da requisição de Java para Json
         String jsonBody = objectMapper.writeValueAsString(productDTO);
         ResultActions result =
                 mockMvc.perform(MockMvcRequestBuilders.put("/products/{id}", existingId)
                         .content(jsonBody)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON));
+                        .contentType(MediaType.APPLICATION_JSON) // Tipo de dados da requisição
+                        .accept(MediaType.APPLICATION_JSON)); // Tipo de dados da resposta
         // O '$' acessa o atributo no Json, nesse caso estamos verificando se o id, name, description existem
         result.andExpect(MockMvcResultMatchers.status().isOk());
         result.andExpect(MockMvcResultMatchers.jsonPath("$.id").exists());
         result.andExpect(MockMvcResultMatchers.jsonPath("$.name").exists());
         result.andExpect(MockMvcResultMatchers.jsonPath("$.description").exists());
+
     }
 
     @Test
@@ -84,7 +129,8 @@ public class ProductResourceTests {
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON));
-        // O '$' acessa o atributo no Json, nesse caso estamos verificando se o id, name, description existem
+
+        // Status esperado
         result.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
@@ -93,7 +139,7 @@ public class ProductResourceTests {
         ResultActions result =
                 mockMvc.perform(MockMvcRequestBuilders.get("/products")
                         .accept(MediaType.APPLICATION_JSON));
-        //
+        // Status esperado
         result.andExpect(MockMvcResultMatchers.status().isOk());
     }
 
@@ -102,7 +148,7 @@ public class ProductResourceTests {
         ResultActions result =
                 mockMvc.perform(MockMvcRequestBuilders.get("/products/{id}", existingId)
                         .accept(MediaType.APPLICATION_JSON));
-
+        // Status esperado
         result.andExpect(MockMvcResultMatchers.status().isOk());
 
         // O '$' acessa o atributo no Json, nesse caso estamos verificando se o id, name, description existem
@@ -119,6 +165,7 @@ public class ProductResourceTests {
         ResultActions result =
                 mockMvc.perform(MockMvcRequestBuilders.get("/products/{id}", nonExistingId)
                         .accept(MediaType.APPLICATION_JSON));
+        // Status esperado
         result.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 

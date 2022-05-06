@@ -37,6 +37,7 @@ public class ProductResource {
         // objeto utilizado para inserir a variável Location com a URI no header da resposta
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(dto.getId()).toUri();
         return ResponseEntity.created(uri).body(dto);
+        //return ResponseEntity.status(HttpStatus.CREATED.value()).body(dto);
     }
 
     @PutMapping(value = "/{id}")
@@ -46,7 +47,7 @@ public class ProductResource {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Void> update(@PathVariable(value = "id") Long id){ // Como o corpo da resposta será vazio, estamos usando o Void no Response Entity
+    public ResponseEntity<Void> delete(@PathVariable(value = "id") Long id){ // Como o corpo da resposta será vazio, estamos usando o Void no Response Entity
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
