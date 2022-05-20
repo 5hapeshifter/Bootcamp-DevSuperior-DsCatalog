@@ -9,7 +9,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "tb_product")
-public class Product  implements Serializable {
+public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -29,8 +29,7 @@ public class Product  implements Serializable {
     @JoinTable( // Anotação que cria uma tabel e faz a associação entre duas entidades
         name = "tb_product_category",
         joinColumns = @JoinColumn(name = "product_id"),  // joinColumns Estabelece a chave estrangeira relacionada a classe presente
-        inverseJoinColumns = @JoinColumn(name = "category_id") // inverseJoinColumns Estabelece a outra chave estrangeira com base no objeto da coleção, nesse caso é Category
-    )
+        inverseJoinColumns = @JoinColumn(name = "category_id")) // inverseJoinColumns Estabelece a outra chave estrangeira com base no objeto da coleção, nesse caso é Category
     Set<Category> categories = new HashSet<>();
 
     public Product(){

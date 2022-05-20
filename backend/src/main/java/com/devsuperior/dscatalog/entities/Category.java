@@ -3,7 +3,9 @@ package com.devsuperior.dscatalog.entities;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "tb_category")
@@ -21,6 +23,9 @@ public class Category implements Serializable {
 
     @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE") // Aqui estamos definindo que o horário padrão será o UTC
     private Instant updatedAt;
+
+    @ManyToMany(mappedBy = "categories")
+    private Set<Product> products = new HashSet<>();
 
     public Category() {
     }
@@ -62,6 +67,10 @@ public class Category implements Serializable {
     @PreUpdate // Sempre que chamarmos o update, o sistema gravará automaticamente a data e horário
     public void preUpdate() {
         updatedAt = Instant.now();
+    }
+
+    public Set<Product> getProducts() {
+        return products;
     }
 
     @Override
