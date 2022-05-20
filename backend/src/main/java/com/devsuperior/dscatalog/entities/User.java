@@ -19,7 +19,7 @@ public class User implements Serializable {
     private String email;
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER) // Anotação para forçar que sempre que um usuário for buscado no banco, vira os atributos de todas entidades associadas a ele
     @JoinTable( // Anotação que cria uma tabel e faz a associação entre duas entidades
             name = "tb_user_role",
             joinColumns = @JoinColumn(name = "user_id"),  // joinColumns Estabelece a chave estrangeira relacionada a classe presente
