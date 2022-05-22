@@ -12,6 +12,7 @@ public class UserDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
+
     @NotBlank(message = "Campo obrigatório.")
     private String firstName;
     private String lastName;
