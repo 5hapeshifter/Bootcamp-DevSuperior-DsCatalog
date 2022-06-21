@@ -14,7 +14,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 public class AppConfig {
 
     @Value(value = "${jwt.secret}")
-    private String jstSecret;
+    private String jwtSecret;
 
     /**
      * Bean é um componente do Spring, com o @Bean o Spring Boot passa a gerenciar a execução do método.
@@ -32,7 +32,7 @@ public class AppConfig {
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
         JwtAccessTokenConverter tokenConverter = new JwtAccessTokenConverter();
-        tokenConverter.setSigningKey(jstSecret); // chave do token registrada
+        tokenConverter.setSigningKey(jwtSecret); // chave do token registrada
         return tokenConverter;
     }
 

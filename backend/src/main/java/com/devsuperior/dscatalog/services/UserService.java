@@ -99,7 +99,7 @@ public class UserService implements UserDetailsService {
     }
 
 
-    //Método da interface UserDetailService
+    //Método da interface UserDetailService que busca o usuario por email
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = repository.findByEmail(username);
