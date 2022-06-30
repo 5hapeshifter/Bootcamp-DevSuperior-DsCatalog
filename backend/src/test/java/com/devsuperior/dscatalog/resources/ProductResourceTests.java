@@ -41,6 +41,7 @@ public class ProductResourceTests {
     private long dependentId;
     private ProductDTO productDTO;
     private PageImpl<ProductDTO> page; // Objeto concreto ao inves do Page que é uma interface
+    private Long categoryId;
 
     @BeforeEach
     void setUp() throws Exception{
@@ -48,12 +49,13 @@ public class ProductResourceTests {
         existingId = 1L;
         nonExistingId = 2L;
         dependentId = 3L;
+        categoryId = 1L;
 
         productDTO = Factory.createProductDto();
         page = new PageImpl<>(List.of(productDTO));
 
         // Comportamentos esperados simulados
-        Mockito.when(service.findAllPaged(any())).thenReturn(page);
+        Mockito.when(service.findAllPaged(categoryId, any())).thenReturn(page);
 
         Mockito.when(service.findById(existingId)).thenReturn(productDTO);
         Mockito.when(service.findById(nonExistingId)).thenThrow(ResourceNotFoundException.class);

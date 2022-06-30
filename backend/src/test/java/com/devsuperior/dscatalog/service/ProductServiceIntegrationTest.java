@@ -34,12 +34,14 @@ public class ProductServiceIntegrationTest {
     private Long existingId;
     private Long nonExistingId;
     private Long countTotalProducts;
+    private Long categoryId;
 
     @BeforeEach
     void setUp() throws Exception {
         existingId = 1L;
         nonExistingId = 1000L;
         countTotalProducts = 25L;
+        categoryId = 1L;
     }
 
     @Test
@@ -59,7 +61,7 @@ public class ProductServiceIntegrationTest {
     public void findAllPagedShouldReturnPageWhenPage0Size10() {
         // Estamos pedindo a pagina com 10 produtos, como temos 25, essa pagina tem que vir
         PageRequest pageRequest = PageRequest.of(0, 10);
-        Page<ProductDTO> result = service.findAllPaged(pageRequest);
+        Page<ProductDTO> result = service.findAllPaged(categoryId, pageRequest);
 
         Assertions.assertFalse(result.isEmpty()); // verificando se a pagina esta vazia
         Assertions.assertEquals(0, result.getNumber()); // verificando o numero da pagina
@@ -71,7 +73,7 @@ public class ProductServiceIntegrationTest {
     public void findAllPagedShouldReturnEmptyPageWhenPageDoesNotExist() {
         // Estamos pedindo a pagina com 10 produtos, como temos 25, essa pagina tem que vir
         PageRequest pageRequest = PageRequest.of(50, 10);
-        Page<ProductDTO> result = service.findAllPaged(pageRequest);
+        Page<ProductDTO> result = service.findAllPaged(categoryId, pageRequest);
 
         Assertions.assertTrue(result.isEmpty());
     }
@@ -80,7 +82,7 @@ public class ProductServiceIntegrationTest {
     public void findAllPagedShouldReturnOrderedPageWhenSortByName() {
         // Estamos pedindo a pagina com 10 produtos, como temos 25, essa pagina tem que vir
         PageRequest pageRequest = PageRequest.of(0, 10, Sort.by("name"));
-        Page<ProductDTO> result = service.findAllPaged(pageRequest);
+        Page<ProductDTO> result = service.findAllPaged(categoryId, pageRequest);
 
         Assertions.assertFalse(result.isEmpty());
         Assertions.assertEquals("Macbook Pro", result.getContent().get(0).getName());

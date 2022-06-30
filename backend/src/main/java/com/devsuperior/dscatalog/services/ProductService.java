@@ -29,8 +29,9 @@ public class ProductService {
     private CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true) // Se der algum problema, td será desfeito. importante colocar o read only true para otimizar a consulta
-    public Page<ProductDTO> findAllPaged(Pageable pageable) {
-        Page<Product> list = repository.findAll(pageable);
+    public Page<ProductDTO> findAllPaged(Long categoryId, Pageable pageable) {
+        Category category = (categoryId == 0) ? null : categoryRepository.getOne(categoryId);
+        Page<Product> list = repository.find(category, pageable);
         return list.map(x -> new ProductDTO(x));
     }
 

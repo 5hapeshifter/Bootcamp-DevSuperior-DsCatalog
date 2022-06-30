@@ -56,6 +56,7 @@ public class ProductServicesTest {
     private PageImpl<Product> page;
     private Product product;
     private ProductDTO dto;
+    private Long categoryId;
     //private Product dtoToProduct;
 
     @BeforeEach
@@ -66,6 +67,7 @@ public class ProductServicesTest {
         product = Factory.createProduct();
         page = new PageImpl<>(List.of(product));
         dto = new ProductDTO(1L, "AAAA", "BBBBB", 5.00, "www.naoxiste.com", Instant.now());
+        categoryId = 1L;
 
         /*
          Como o método retorna um pageable, temos que fazer um cast para Pageable para o compilador saber o tipo do objeto
@@ -119,7 +121,7 @@ public class ProductServicesTest {
     @Test
     public void findAllPagedShouldReturnPage() {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ProductDTO> result = service.findAllPaged(pageable);
+        Page<ProductDTO> result = service.findAllPaged(categoryId, pageable);
         Assertions.assertNotNull(result);
         Mockito.verify(repository).findAll(pageable);
     }
