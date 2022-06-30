@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
@@ -15,6 +17,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Com JPQL temos que informar o nome da classe que estamos buscando, nao da tabela
     // ":category" referencia o parametro que esta sendo passado no metodo
     @Query("SELECT DISTINCT obj FROM Product obj INNER JOIN obj.categories cats WHERE " +
-            "(:category IS NULL OR :category IN cats)")
-    Page<Product> find(Category category, Pageable pageable);
+            "(COALESCE(:categories) IS NULL OR cats IN :categories) AND" +
+            "(:name = '' OR LOWER(obj.name) LIKE LOWER (CONCAT('%', :name, '%')))")
+    Page<Product> find(List<Category> categories, String name, Pageable pageable);
 }
