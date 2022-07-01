@@ -2,6 +2,7 @@ package com.devsuperior.dscatalog.resources;
 
 import com.devsuperior.dscatalog.dto.ProductDTO;
 import com.devsuperior.dscatalog.tests.Factory;
+import com.devsuperior.dscatalog.tests.TokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,15 +33,22 @@ public class ProductResourceIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private TokenUtil tokenUtil;
+
     private Long existingId;
     private Long nonExistingId;
     private Long countTotalProducts;
+    private String usarname;
+    private String password;
 
     @BeforeEach
     void setUp() throws Exception {
         existingId = 1L;
         nonExistingId = 1000L;
         countTotalProducts = 25L;
+        usarname = "maria@gmail.com";
+        password = "123456";
     }
 
     @Test
@@ -60,6 +68,7 @@ public class ProductResourceIntegrationTest {
 
     @Test
     public void updateShouldReturnProductDTOWhenIdExist() throws Exception {
+        String accessToken = tokenUtil.obtainAccessToken(mockMvc, usarname, password);
         ProductDTO productDTO = Factory.createProductDto();
         // Para poder fazer o teste estamos convertando o tipo do objeto da requisição de Java para Json
         String jsonBody = objectMapper.writeValueAsString(productDTO);
@@ -69,6 +78,7 @@ public class ProductResourceIntegrationTest {
 
         ResultActions result =
                 mockMvc.perform(MockMvcRequestBuilders.put("/products/{id}", existingId)
+                        .header("Authorization", "Bearer" + accessToken)
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON) // Tipo de dados da requisição
                         .accept(MediaType.APPLICATION_JSON)); // Tipo de dados da resposta
@@ -82,12 +92,14 @@ public class ProductResourceIntegrationTest {
 
     @Test
     public void updateShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
+        String accessToken = tokenUtil.obtainAccessToken(mockMvc, usarname, password);
         ProductDTO productDTO = Factory.createProductDto();
         // Para poder fazer o teste estamos convertando o tipo do objeto da requisição de Java para Json
         String jsonBody = objectMapper.writeValueAsString(productDTO);
 
         ResultActions result =
                 mockMvc.perform(MockMvcRequestBuilders.put("/products/{id}", nonExistingId)
+                        .header("Authorization", "Bearer" + accessToken)
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON) // Tipo de dados da requisição
                         .accept(MediaType.APPLICATION_JSON)); // Tipo de dados da resposta
